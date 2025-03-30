@@ -1,0 +1,50 @@
+{
+    "bot": {
+        "token": "MTM0ODM0MDI4NjEwNzE1NjU3MA.G-wglr.hH6tBJ4lM4MJfJneW8JWQ_y9ibIJEkxsAGK0Es",
+        "prefix": "!",
+        "owners": [
+            "886343246089953312"
+        ]
+    },
+    "slot": {
+        "categories": {
+            "1": "1355960127685132499",
+            "2": "1355960130235142457",
+            "3": "1355960131967258654"
+        },
+        "sellerRole": "1355960122848841978",
+        "logChannel": "1355960125113766152",
+        "embedColor": "#3498db",
+        "footerText": "SlotBot by DevAnik",
+        "templates": {
+            "daily": {
+                "duration": 1,
+                "pings": {
+                    "here": 1,
+                    "everyone": 0
+                }
+            },
+            "weekly": {
+                "duration": 7,
+                "pings": {
+                    "here": 2,
+                    "everyone": 1
+                }
+            },
+            "monthly": {
+                "duration": 30,
+                "pings": {
+                    "here": 3,
+                    "everyone": 1
+                }
+            },
+            "lifetime": {
+                "duration": -1,
+                "pings": {
+                    "here": 4,
+                    "everyone": 3
+                }
+            }
+        }
+    }
+}

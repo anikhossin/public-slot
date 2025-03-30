@@ -1,0 +1,105 @@
+# Logs and runtime data
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Diagnostic reports
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage and build outputs
+coverage/
+*.lcov
+.nyc_output/
+dist/
+build/
+.temp/
+
+# Dependency directories
+node_modules/
+bower_components/
+jspm_packages/
+web_modules/
+
+# TypeScript
+*.tsbuildinfo
+
+# Cache files
+.cache/
+.parcel-cache/
+.rpt2_cache/
+.rts2_cache_*/
+
+# IDE/Editor-specific files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Environment variable files
+.env
+.env.*
+.env.local
+
+# Output of 'npm pack'
+*.tgz
+
+# Optional npm and yarn files
+.npm/
+.yarn/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# ESLint/Stylelint cache
+.eslintcache
+.stylelintcache
+
+# Test-related files
+node_modules/.cache/
+node_modules/.bin/
+node_modules/jasmine/
+__tests__/
+__mocks__/
+
+# Framework-specific files
+.next/
+.nuxt/
+.vuepress/
+public/
+out/
+
+# Miscellaneous
+.yarn-integrity
+.yarnrc.yml
+.lock-wscript
+.tern-port
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+
+# Generated files
+*.d.ts
+*.min.*
+*.map
