@@ -11,6 +11,7 @@ export function getRandomCode(length: number = 27): string {
 import fs from 'fs';
 import path from 'path';
 import { IConfigJson } from '../types/Config';
+import { ColorResolvable } from 'discord.js';
 
 export function loadConfig(): IConfigJson | null {
     const configPath = path.join(__dirname, '..','..' ,'config.json');
@@ -29,4 +30,18 @@ export function beautifyString(str: string): string {
         .split(' ')
         .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
         .join(' ');
+}
+
+export function getColor(): ColorResolvable {
+    const config = loadConfig();
+    if (!config) {
+        console.error("Config not found. Please contact the admin.");
+        return "#000000"; 
+    }
+    const color = config.slot.embedColor;
+    if (color) {
+        return color as ColorResolvable;
+    } else {
+        return "#000000"; // Default color
+    }
 }

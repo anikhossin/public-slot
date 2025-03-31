@@ -5,6 +5,10 @@ export interface IConfigJson {
     owners: string[];
   };
   slot: {
+    pingResetTime: {
+      timezone: string;
+      time: string;
+    }
     categories: {
       [key: string]: string;
     };

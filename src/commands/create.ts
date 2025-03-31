@@ -109,11 +109,10 @@ const CreateSlotCommand: PrefixCommand = {
       return await message.reply("Failed to create channel. Please try again.");
     }
 
-    // Using dayjs for better date handling
+    
     const now = dayjs();
     const expiryDate = now.add(template.duration, 'day');
     
-    // Convert to Unix timestamps (seconds)
     const nowTimestamp = now.unix();
     const expiryTimestamp = expiryDate.unix();
 
@@ -137,6 +136,11 @@ const CreateSlotCommand: PrefixCommand = {
         expiresAt: expiryTimestamp.toString(),
         lastPing: nowTimestamp.toString(),
     });
+
+    const member = await message.guild?.members.fetch(user.id).catch(() => null);
+    if (member) {
+      await member.roles.add(sellerRole).catch(() => null);
+    }
 
     try {
         await user.send({

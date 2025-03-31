@@ -20,7 +20,7 @@ const AutoConfigCommand: PrefixCommand = {
       "Automatically configures SlotBot categories, roles, channels, and updates config",
     usage: "autoconfig",
     aliases: ["setup", "configure"],
-    category: "Admin",
+    category: "Utils",
     permissions: ['Administrator']
   },
   execute: async (message: Message, args: string[]) => {

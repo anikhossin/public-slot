@@ -7,6 +7,10 @@
         ]
     },
     "slot": {
+        "pingResetTime": {
+            "timezone": "Asia/Dhaka",
+            "time": "15:15"
+        },
         "categories": {
             "1": "1355960127685132499",
             "2": "1355960130235142457",
