@@ -4,6 +4,31 @@ SlotBot is a Discord bot designed to manage seller slots in a marketplace server
 
 > **Note:** SlotBot is a spare-time project and bugs may be present. Please report any issues you encounter to help improve the bot. 
 
+## Quick Start
+
+```bash
+# Clone the repository
+git clone https://github.com/anikhossin/public-slot.git
+cd public-slot
+
+# Install dependencies
+npm install
+# or with pnpm
+pnpm install
+
+# Build the TypeScript files
+npm run build
+# or with pnpm
+pnpm run build
+
+# Start the bot
+npm start
+# or with pnpm
+pnpm start
+```
+
+Remember to configure your `config.json` file before starting the bot!
+
 ## Features
 
 - 🔄 Create time-limited seller slots with customizable durations
