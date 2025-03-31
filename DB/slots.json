@@ -1,21 +1,21 @@
 [
   {
     "userId": "886343246089953312",
-    "channelid": "1356191541689061386",
-    "restoreCode": "Lo0MVaBj7BbslKkZXrlfIr4JrVE",
+    "channelid": "1356245099066953899",
+    "restoreCode": "7MashupaY1qdMYrTSEqJOM45ITP",
     "status": "active",
     "pings": {
       "here": {
         "max": 2,
-        "current": 1
+        "current": 0
       },
       "everyone": {
         "max": 1,
         "current": 0
       }
     },
-    "createdAt": "1743411660",
-    "expiresAt": "1744880460",
-    "lastPing": "1743411660"
+    "createdAt": "1743423984",
+    "expiresAt": "1744028784",
+    "lastPing": "1743423984"
   }
 ]

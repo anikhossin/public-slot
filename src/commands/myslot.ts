@@ -35,7 +35,7 @@ const MySlotCommand: PrefixCommand = {
           name: "Pings Remaining",
           value: `\`\`\`@here: ${userslot.pings.here.current}/${userslot.pings.here.max}\n@everyone: ${userslot.pings.everyone.current}/${userslot.pings.everyone.max}\`\`\``,
           inline: false,
-        }
+        },
       ])
       .setColor(getColor())
       .setFooter({ text: `Requested by ${msg.author.tag}`, iconURL: msg.author.displayAvatarURL() || "" })

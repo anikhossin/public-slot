@@ -209,6 +209,32 @@ export function getHelpEmbed(commandName?: string): EmbedBuilder {
     return embed;
 }
 
+const cooldowns = new Map<string, number>();
+export function checkCooldown(commandName: string, userId: string): boolean {
+    const now = Date.now();
+    const cooldownKey = `${commandName}-${userId}`;
+    const cooldown = cooldowns.get(cooldownKey);
+    if (cooldown) {
+        const remainingTime = cooldown - now;
+        if (remainingTime > 0) {
+            return false;
+        }
+    }
+    cooldowns.set(cooldownKey, now + (commands.get(commandName)?.data.cooldown || 0) * 1000);
+    return true; 
+}
+
+export function getRemainingCooldown(commandName: string, userId: string): number {
+    const now = Date.now();
+    const cooldownKey = `${commandName}-${userId}`;
+    const cooldown = cooldowns.get(cooldownKey);
+    
+    if (!cooldown) return 0;
+    
+    const remainingTime = cooldown - now;
+    return remainingTime > 0 ? Math.ceil(remainingTime / 1000) : 0;
+}
+
 export function setupCommandHandler(client: Client): void {
     client.on('messageCreate', async (message: Message) => {
         if (message.author.bot) return;
@@ -245,6 +271,12 @@ export function setupCommandHandler(client: Client): void {
                 await message.reply('You do not have permission to use this command.');
                 return;
             }
+        }
+
+        if (command.data.cooldown && !checkCooldown(commandName, message.author.id)) {
+            const remainingTime = getRemainingCooldown(commandName, message.author.id);
+            await message.reply(`Please wait ${remainingTime.toFixed(2)} seconds before using this command again.`);
+            return;
         }
         
         try {
