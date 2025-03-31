@@ -20,7 +20,6 @@ pids/
 coverage/
 *.lcov
 .nyc_output/
-dist/
 build/
 .temp/
 

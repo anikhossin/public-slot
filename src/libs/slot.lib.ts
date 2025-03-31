@@ -1,97 +1,70 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-const fs = __importStar(require("fs"));
-const path = __importStar(require("path"));
+import * as fs from 'fs';
+import * as path from 'path';
+import { ISlot, ISlotStatus } from '../types/Slot';
+
 const filePath = path.join(__dirname, "../../DB/slots.json");
+
 class SlotLib {
-    loadSlots() {
+    private loadSlots(): ISlot[] {
         try {
             if (!fs.existsSync(filePath)) {
                 fs.writeFileSync(filePath, JSON.stringify([]));
             }
-            return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-        }
-        catch (error) {
+            return JSON.parse(fs.readFileSync(filePath, 'utf-8')) as ISlot[];
+        } catch (error) {
             console.error(`Error loading slots: ${error}`);
             return [];
         }
     }
-    saveslots(data) {
+
+    private saveslots(data: any): void {
         try {
             fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-        }
-        catch (error) {
+        } catch (error) {
             console.error(`Error saving slots: ${error}`);
         }
     }
-    getSlots() {
+
+    public getSlots(): ISlot[] {
         return this.loadSlots();
     }
-    getSlotByUserId(userId) {
+    public getSlotByUserId(userId: string): ISlot | undefined {
         const slots = this.loadSlots();
         return slots.find(slot => slot.userId === userId);
     }
-    getSlotByChannelId(channelId) {
+
+    public getSlotByChannelId(channelId: string): ISlot | undefined {
         const slots = this.loadSlots();
         return slots.find(slot => slot.channelid === channelId);
     }
-    addSlot(slot) {
+
+    public addSlot(slot: ISlot): void {
         const slots = this.loadSlots();
         slots.push(slot);
         this.saveslots(slots);
     }
-    updateSlot(userId, updatedSlot) {
+    
+    public updateSlot(userId: string, updatedSlot: Partial<ISlot>): void {
         const slots = this.loadSlots();
         const index = slots.findIndex(slot => slot.userId === userId);
         if (index !== -1) {
-            slots[index] = Object.assign(Object.assign({}, slots[index]), updatedSlot);
+            slots[index] = { ...slots[index], ...updatedSlot };
             this.saveslots(slots);
         }
     }
-    deleteSlot(userId) {
+
+    public deleteSlot(userId: string): void {
         const slots = this.loadSlots();
         const updatedSlots = slots.filter(slot => slot.userId !== userId);
         this.saveslots(updatedSlots);
     }
-    deleteSlotByChannelId(channelId) {
+    public deleteSlotByChannelId(channelId: string): void {
         const slots = this.loadSlots();
         const updatedSlots = slots.filter(slot => slot.channelid !== channelId);
         this.saveslots(updatedSlots);
     }
-    addherePing(userId) {
+
+    public addherePing(userId: string): void {
         const slots = this.loadSlots();
         const index = slots.findIndex(slot => slot.userId === userId);
         if (index !== -1) {
@@ -99,7 +72,7 @@ class SlotLib {
             this.saveslots(slots);
         }
     }
-    addeveryonePing(userId) {
+    public addeveryonePing(userId: string): void {  
         const slots = this.loadSlots();
         const index = slots.findIndex(slot => slot.userId === userId);
         if (index !== -1) {
@@ -107,7 +80,8 @@ class SlotLib {
             this.saveslots(slots);
         }
     }
-    resetPings(userId) {
+
+    public resetPings(userId: string): void {
         const slots = this.loadSlots();
         const index = slots.findIndex(slot => slot.userId === userId);
         if (index !== -1) {
@@ -116,7 +90,7 @@ class SlotLib {
             this.saveslots(slots);
         }
     }
-    resetAllPings() {
+    public resetAllPings(): void {
         const slots = this.loadSlots();
         slots.forEach(slot => {
             slot.pings.here.current = 0;
@@ -124,14 +98,15 @@ class SlotLib {
         });
         this.saveslots(slots);
     }
-    getAllSlots() {
+    public getAllSlots(): ISlot[] {
         return this.loadSlots();
     }
-    getAllSlotsByStatus(status) {
+    public getAllSlotsByStatus(status: string): ISlot[] {
         const slots = this.loadSlots();
         return slots.filter(slot => slot.status === status);
     }
-    updateSlotStatus(userId, status) {
+
+    public updateSlotStatus(userId: string, status: ISlotStatus ): void {
         const slots = this.loadSlots();
         const index = slots.findIndex(slot => slot.userId === userId);
         if (index !== -1) {
@@ -140,5 +115,5 @@ class SlotLib {
         }
     }
 }
-exports.default = new SlotLib();
-//# sourceMappingURL=slot.lib.js.map
+
+export default new SlotLib();
