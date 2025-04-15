@@ -6,7 +6,8 @@ import { logPost } from "../libs/logpost";
 
 export async function makeExpired(client: Client) {
   try {
-    const slots = slotLib.getAllSlots();
+    const allslots = slotLib.getAllSlots();
+    const slots = allslots.filter(slot => slot.duration > 0);
     const config = loadConfig();
     if (!config) {
       console.error("[makeExpired] Config not found.");

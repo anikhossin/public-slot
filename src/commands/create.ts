@@ -122,6 +122,7 @@ const CreateSlotCommand: PrefixCommand = {
         channelid: channel.id,
         restoreCode: restoreCode,
         status: "active",
+        duration: template.duration,
         pings: {
             here: {
                 max: template.pings.here,
@@ -135,6 +136,7 @@ const CreateSlotCommand: PrefixCommand = {
         createdAt: nowTimestamp.toString(),
         expiresAt: expiryTimestamp.toString(),
         lastPing: nowTimestamp.toString(),
+        
     });
 
     const member = await message.guild?.members.fetch(user.id).catch(() => null);
@@ -151,17 +153,17 @@ const CreateSlotCommand: PrefixCommand = {
     }
 
     const embed = new EmbedBuilder()
-    .setAuthor({ name: `${beautifyString(type)} Slot`})
+    .setAuthor({ name: `${beautifyString(type)} Slot` })
     .setColor(slot.embedColor as ColorResolvable)
     .setDescription(
-        `- Follow all the rules and regulations of the server.\n` +
-        `- Always ready to accept Middle Man`
+      `- Follow all the rules and regulations of the server.\n` +
+      `- Always ready to accept Middle Man`
     )
     .addFields([
-        { name: "📅 Purchased At", value: `<t:${nowTimestamp}:F>`, inline: true },
-        { name: "⏳ Expiry Date", value: `<t:${expiryTimestamp}:F>`, inline: true },
-        { name: "⌛ Duration", value: `${template.duration} day(s)`, inline: true },
-        { name: "🔔 Available Pings", value: `\`@here\`: ${template.pings.here}\n\`@everyone\`: ${template.pings.everyone}`, inline: false },
+      { name: "📅 Purchased At", value: `<t:${nowTimestamp}:F>`, inline: true },
+      { name: "⏳ Expiry Date", value: template.duration === -1 ? "Lifetime" : `<t:${expiryTimestamp}:F>`, inline: true },
+      { name: "⌛ Duration", value: template.duration === -1 ? "Lifetime" : `${template.duration} day(s)`, inline: true },
+      { name: "🔔 Available Pings", value: `\`@here\`: ${template.pings.here}\n\`@everyone\`: ${template.pings.everyone}`, inline: false },
     ])
     .setFooter({ text: `Slot ID: ${channel.id} • Developed by @dev_anik` })
     .setTimestamp();
@@ -170,6 +172,11 @@ const CreateSlotCommand: PrefixCommand = {
         content: `👋 Welcome <@${user.id}>! Your ${beautifyString(type)} slot has been created successfully. **Check your DMs for your restore code!**`, 
         embeds: [embed] 
     });
+
+    slotLib.updateSlot(user.id, { embeddata: embed.toJSON() });
+
+
+
     
     const sentMessage = await channel.send({
         content: `**📌 IMPORTANT INFORMATION**\n> Please keep this message pinned for future reference.\n> Your restore code has been sent to you via DM.\n> Type \`!help\` to see available commands for your slot.`

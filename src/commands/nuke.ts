@@ -2,7 +2,7 @@ import { Message, TextChannel, EmbedBuilder, time } from "discord.js";
 import { PrefixCommand } from "../types/command";
 import slotLib from "../libs/slot.lib";
 import dayjs from "dayjs";
-import { beautifyString, getColor } from "../libs/others";
+import { getColor } from "../libs/others";
 
 const command: PrefixCommand = {
   data: {
@@ -47,41 +47,11 @@ const command: PrefixCommand = {
 
     slotLib.updateSlot(userslot.userId, { channelid: newch.id });
 
-    const createdAt = dayjs(Number(userslot.createdAt) * 1000);
-    const expiresAt = dayjs(Number(userslot.expiresAt) * 1000);
-    const diff = expiresAt.diff(createdAt, "day");
+    // const createdAt = dayjs(Number(userslot.createdAt) * 1000);
+    // const expiresAt = dayjs(Number(userslot.expiresAt) * 1000);
+    // const diff = expiresAt.diff(createdAt, "day");
 
-    const embed = new EmbedBuilder()
-      .setAuthor({ name: `${diff} Slot` })
-      .setColor(getColor())
-      .setDescription(
-        `- Follow all the rules and regulations of the server.\n` +
-          `- Always ready to accept Middle Man`
-      )
-      .addFields([
-        {
-          name: "📅 Purchased At",
-          value: `<t:${createdAt.unix()}:F>`,
-          inline: true,
-        },
-        {
-          name: "⏳ Expiry Date",
-          value: `<t:${expiresAt.unix()}:F>`,
-          inline: true,
-        },
-        {
-          name: "⌛ Duration",
-          value: `${diff} day(s)`,
-          inline: true,
-        },
-        {
-          name: "🔔 Available Pings",
-          value: `\`@here\`: ${userslot.pings.here.max}\n\`@everyone\`: ${userslot.pings.everyone.max}`,
-          inline: false,
-        },
-      ])
-      .setFooter({ text: `Slot ID: ${channel.id} • Developed by @dev_anik` })
-      .setTimestamp();
+    const embed = new EmbedBuilder(userslot.embeddata)
 
     await newch.send({
       embeds: [embed],

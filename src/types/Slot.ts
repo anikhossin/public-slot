@@ -6,6 +6,7 @@ export interface ISlot {
     channelid: string;
     restoreCode: string;
     status: ISlotStatus;
+    duration: number;
     pings: {
         "here": {
             "max": number;
@@ -19,4 +20,5 @@ export interface ISlot {
     createdAt: string;
     expiresAt: string;
     lastPing: string;
+    embeddata?: Object;
 }
