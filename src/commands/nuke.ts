@@ -42,7 +42,7 @@ const command: PrefixCommand = {
       position: channel.position,
     });
     if (!newch) {
-      return await msg.reply(":x: Unable to create a new channel.");
+      return console.error("Failed to create new channel during nuke");
     }
 
     slotLib.updateSlot(userslot.userId, { channelid: newch.id });
@@ -51,7 +51,7 @@ const command: PrefixCommand = {
     // const expiresAt = dayjs(Number(userslot.expiresAt) * 1000);
     // const diff = expiresAt.diff(createdAt, "day");
 
-    const embed = new EmbedBuilder(userslot.embeddata)
+    const embed = new EmbedBuilder(userslot.embeddata);
 
     await newch.send({
       embeds: [embed],
@@ -59,9 +59,6 @@ const command: PrefixCommand = {
 
     await newch.send({
       content: `Recently, this slot has been nuked`,
-    });
-    await msg.reply({
-      content: `:white_check_mark: Your slot channel has been nuked and a new one has been created.`,
     });
   },
 };

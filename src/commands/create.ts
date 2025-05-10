@@ -163,7 +163,7 @@ const CreateSlotCommand: PrefixCommand = {
     .addFields([
       { name: "Purchased At", value: `<t:${nowTimestamp}:F>`, inline: true },
       { name: "Expiry Date", value: template.duration === -1 ? "Lifetime" : `<t:${expiryTimestamp}:F>`, inline: true },
-      { name: "Duration", value: template.duration === -1 ? "Lifetime" : `${template.duration} day(s)`, inline: true },
+      { name: "Duration", value: template.duration === -1 ? "Never" : `${template.duration} day(s)`, inline: true },
       { name: "Available Pings", value: `\`@here\`: ${template.pings.here}\n\`@everyone\`: ${template.pings.everyone}`, inline: false },
     ])
     .setFooter({ text: `Slot ID: ${channel.id} • Developed by @dev_anik` })
