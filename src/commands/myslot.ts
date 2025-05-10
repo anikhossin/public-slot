@@ -28,7 +28,7 @@ const MySlotCommand: PrefixCommand = {
         },
         {
           name: "Expiration",
-          value: `⏱️ ${time((dayjs(Number(userslot.expiresAt) * 1000).unix()), "R")}`,
+          value: userslot.duration === -1 ? "Never" : `⏱️ ${time((dayjs(Number(userslot.expiresAt) * 1000).unix()), "R")}`,
           inline: true,
         },
         {
