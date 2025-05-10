@@ -14,6 +14,7 @@ import slotLib from "./libs/slot.lib";
 import { AutoPingReset } from "./Automations/auto-ping-reset";
 import { logPost } from "./libs/logpost";
 import { makeExpired } from "./Automations/make-expired";
+import channelPositionMaintainer from "./Automations/channnel-position-maintainer";
 
 const client = new Client({
   intents: [
@@ -129,6 +130,11 @@ setInterval(async () => {
 setInterval(async () => {
   await makeExpired(client);
 }, 1000 * 60); // 1 minute interval
+
+// Check and update channel positions (every 5 minutes)
+setInterval(async () => {
+  await channelPositionMaintainer(client);
+}, 1000 * 60 * 5); // 5 minute interval
 
 client.login(bot.token).catch((error) => {
   console.error("Failed to login:", error);
