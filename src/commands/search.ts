@@ -1,8 +1,7 @@
-import { EmbedBuilder, Message, time } from "discord.js";
+import { EmbedBuilder, Message, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, Collection } from "discord.js";
 import { PrefixCommand } from "../types/command";
 import slotLib from "../libs/slot.lib";
 import FlexSearch from "flexsearch";
-import dayjs from "dayjs";
 import { getColor } from "../libs/others";
 import { ISlot } from "../types/Slot";
 
@@ -144,44 +143,148 @@ const SearchCommand: PrefixCommand = {
                     .setTimestamp();
                 return await msg.reply({ embeds: [embed] });
             }
-            const embed = new EmbedBuilder()
-                .setTitle("🔍 Search Results")
-                .setDescription(query
-                    ? `Found ${results.length} slot(s) with products matching "${query}"`
-                    : `All active slots (${results.length} total) - sorted by priority`
-                )
-                .setColor(getColor())
-                .setTimestamp();
-            const displayResults = results.slice(0, 10);
-            for (let i = 0; i < displayResults.length; i++) {
-                const result = displayResults[i];
-                const { slot, matchedProducts } = result;
-                const statusEmoji = slot.status === "active" ? "🟢" : "🟡";
-                const durationType = slot.duration === -1 ? "Lifetime" : `${slot.duration}d`;
-                const expiration = slot.duration === -1
-                    ? "Never"
-                    : time(dayjs(Number(slot.expiresAt) * 1000).unix(), "R");
-                const products = query
-                    ? matchedProducts.slice(0, 3).join(", ") + (matchedProducts.length > 3 ? "..." : "")
-                    : slot.products.slice(0, 3).join(", ") + (slot.products.length > 3 ? "..." : "");
+
+            const itemsPerPage = 10;
+            const totalPages = Math.ceil(results.length / itemsPerPage);
+            let currentPage = 0;
+
+            const userCache = new Collection<string, string>();
+            
+            const prioritySlots = results.slice(0, Math.min(20, results.length));
+            await Promise.allSettled(
+                prioritySlots.map(async (result) => {
+                    try {
+                        const user = await msg.client.users.fetch(result.slot.userId);
+                        userCache.set(result.slot.userId, user.username);
+                    } catch (error) {
+                        userCache.set(result.slot.userId, `User${result.slot.userId}`);
+                    }
+                })
+            );
+
+            const generateEmbed = async (page: number) => {
+                const start = page * itemsPerPage;
+                const end = start + itemsPerPage;
+                const pageResults = results.slice(start, end);
+
+                const embed = new EmbedBuilder()
+                    .setTitle("🔍 Search Results")
+                    .setDescription(query
+                        ? `Found ${results.length} slot(s) with products matching "${query}"`
+                        : `All active slots (${results.length} total) - sorted by priority`
+                    )
+                    .setColor(getColor())
+                    .setTimestamp();
+
+                const displayLines: string[] = [];
+                const userFetchPromises: Promise<void>[] = [];
+
+                for (let i = 0; i < pageResults.length; i++) {
+                    const result = pageResults[i];
+                    const { slot } = result;
+                    
+                    if (userCache.has(slot.userId)) {
+                        const username = userCache.get(slot.userId)!;
+                        displayLines.push(`${start + i + 1}. ${username}: <#${slot.channelid}>`);
+                    } else {
+                        userFetchPromises.push(
+                            msg.client.users.fetch(slot.userId)
+                                .then(user => {
+                                    userCache.set(slot.userId, user.username);
+                                    displayLines[i] = `${start + i + 1}. ${user.username}: <#${slot.channelid}>`;
+                                })
+                                .catch(() => {
+                                    userCache.set(slot.userId, `User${slot.userId}`);
+                                    displayLines[i] = `${start + i + 1}. User${slot.userId}: <#${slot.channelid}>`;
+                                })
+                        );
+                        displayLines.push(`${start + i + 1}. User${slot.userId}: <#${slot.channelid}>`);
+                    }
+                }
+
+                if (userFetchPromises.length > 0) {
+                    await Promise.allSettled(userFetchPromises);
+                }
+
                 embed.addFields([{
-                    name: `${i + 1}. ${statusEmoji} <#${slot.channelid}>`,
-                    value: `**Duration:** ${durationType}\n**Expires:** ${expiration}\n**Products:** ${products || "None"}`,
+                    name: "Results",
+                    value: displayLines.join("\n") || "No results",
                     inline: false
                 }]);
-            }
-            if (results.length > 10) {
+
                 embed.setFooter({
-                    text: `Showing first 10 of ${results.length} results • Requested by ${msg.author.tag}`,
+                    text: `Page ${page + 1}/${totalPages} • ${results.length} total results • Requested by ${msg.author.tag}`,
                     iconURL: msg.author.displayAvatarURL() || ""
                 });
-            } else {
-                embed.setFooter({
-                    text: `Requested by ${msg.author.tag}`,
-                    iconURL: msg.author.displayAvatarURL() || ""
+
+                return embed;
+            };
+
+            const generateButtons = (page: number) => {
+                const row = new ActionRowBuilder<ButtonBuilder>();
+                
+                row.addComponents(
+                    new ButtonBuilder()
+                        .setCustomId('prev')
+                        .setLabel('◀ Previous')
+                        .setStyle(ButtonStyle.Secondary)
+                        .setDisabled(page === 0),
+                    new ButtonBuilder()
+                        .setCustomId('next')
+                        .setLabel('Next ▶')
+                        .setStyle(ButtonStyle.Secondary)
+                        .setDisabled(page === totalPages - 1)
+                );
+
+                return row;
+            };
+
+            const initialEmbed = await generateEmbed(currentPage);
+            const components = totalPages > 1 ? [generateButtons(currentPage)] : [];
+            
+            const response = await msg.reply({ 
+                embeds: [initialEmbed], 
+                components 
+            });
+
+            if (totalPages <= 1) return;
+
+            const collector = response.createMessageComponentCollector({
+                componentType: ComponentType.Button,
+                time: 300000
+            });
+
+            collector.on('collect', async (interaction) => {
+                if (interaction.user.id !== msg.author.id) {
+                    await interaction.reply({
+                        content: 'Only the command author can navigate through pages.',
+                        ephemeral: true
+                    });
+                    return;
+                }
+
+                if (interaction.customId === 'prev' && currentPage > 0) {
+                    currentPage--;
+                } else if (interaction.customId === 'next' && currentPage < totalPages - 1) {
+                    currentPage++;
+                }
+
+                const newEmbed = await generateEmbed(currentPage);
+                const newButtons = generateButtons(currentPage);
+
+                await interaction.update({
+                    embeds: [newEmbed],
+                    components: [newButtons]
                 });
-            }
-            await msg.reply({ embeds: [embed] });
+            });
+
+            collector.on('end', async () => {
+                try {
+                    await response.edit({ components: [] });
+                } catch (error) {
+                }
+            });
+
         } catch (error) {
             console.error("Error in search command:", error);
             const embed = new EmbedBuilder()
