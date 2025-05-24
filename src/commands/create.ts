@@ -48,7 +48,7 @@ const CreateSlotCommand: PrefixCommand = {
     if (!validTypes.includes(type)) {
       return await message.reply(
         "Invalid type! Please use one of the following types: " +
-          validTypes.join(", ")
+        validTypes.join(", ")
       );
     }
 
@@ -59,9 +59,9 @@ const CreateSlotCommand: PrefixCommand = {
 
     const userslot = slotLib.getSlotByUserId(user.id);
     if (userslot) {
-        return await message.reply(
-            `User already has a slot ${channelMention(userslot.channelid)}. Please delete it first.`
-        );
+      return await message.reply(
+        `User already has a slot ${channelMention(userslot.channelid)}. Please delete it first.`
+      );
     }
 
     const msg = await message.reply(
@@ -109,34 +109,34 @@ const CreateSlotCommand: PrefixCommand = {
       return await message.reply("Failed to create channel. Please try again.");
     }
 
-    
+
     const now = dayjs();
     const expiryDate = now.add(template.duration, 'day');
-    
+
     const nowTimestamp = now.unix();
     const expiryTimestamp = expiryDate.unix();
 
     const restoreCode = getRandomCode();
     slotLib.addSlot({
-        userId: user.id,
-        channelid: channel.id,
-        restoreCode: restoreCode,
-        status: "active",
-        duration: template.duration,
-        pings: {
-            here: {
-                max: template.pings.here,
-                current: 0,
-            },
-            everyone: {
-                max: template.pings.everyone,
-                current: 0,
-            },
+      userId: user.id,
+      channelid: channel.id,
+      restoreCode: restoreCode,
+      status: "active",
+      duration: template.duration,
+      pings: {
+        here: {
+          max: template.pings.here,
+          current: 0,
         },
-        createdAt: nowTimestamp.toString(),
-        expiresAt: expiryTimestamp.toString(),
-        lastPing: nowTimestamp.toString(),
-        
+        everyone: {
+          max: template.pings.everyone,
+          current: 0,
+        },
+      },
+      createdAt: nowTimestamp.toString(),
+      expiresAt: expiryTimestamp.toString(),
+      lastPing: nowTimestamp.toString(),
+
     });
 
     const member = await message.guild?.members.fetch(user.id).catch(() => null);
@@ -145,54 +145,47 @@ const CreateSlotCommand: PrefixCommand = {
     }
 
     try {
-        await user.send({
-            content: `🔐 **IMPORTANT: Your Slot Restore Code**\n\nHere is your restore code for the slot in ${message.guild?.name}:\n\`\`\`${restoreCode}\`\`\`\nKeep this code safe and private. It can be used to restore your slot if needed.\n\n**Do not share this code with anyone!**`
-        });
+      await user.send({
+        content: `**IMPORTANT: Your Slot Restore Code**\n\nHere is your restore code for the slot in ${message.guild?.name}:\n\`\`\`${restoreCode}\`\`\`\nKeep this code safe and private. It can be used to restore your slot if needed.\n\n**Do not share this code with anyone!**`
+      });
     } catch (error) {
-        await message.reply(`⚠️ <@${message.author.id}> I couldn't send a DM to ${user.username}. Please ensure they have DMs enabled for this server.`);
+      await message.reply(`Warning: <@${message.author.id}> I couldn't send a DM to ${user.username}. Please ensure they have DMs enabled for this server.`);
     }
 
     const embed = new EmbedBuilder()
-    .setAuthor({ name: `${beautifyString(type)} Slot Information` })
-    .setColor(slot.embedColor as ColorResolvable)
-    .setDescription(
-      `Welcome to your new slot! Please follow these guidelines:\n\n` +
-      `• Follow all server rules and regulations\n` +
-      `• Always be ready to accept a Middle Man when required`
-    )
-    .addFields([
-      { name: "Purchased At", value: `<t:${nowTimestamp}:F>`, inline: true },
-      { name: "Expiry Date", value: template.duration === -1 ? "Lifetime" : `<t:${expiryTimestamp}:F>`, inline: true },
-      { name: "Duration", value: template.duration === -1 ? "Never" : `${template.duration} day(s)`, inline: true },
-      { name: "Available Pings", value: `\`@here\`: ${template.pings.here}\n\`@everyone\`: ${template.pings.everyone}`, inline: false },
-    ])
-    .setFooter({ text: `Slot ID: ${channel.id} • Developed by @dev_anik` })
-    .setTimestamp();
-    
-    await channel.send({ 
-        content: `👋 Welcome <@${user.id}>! Your ${beautifyString(type)} slot has been created successfully. **Check your DMs for your restore code!**`, 
-        embeds: [embed] 
+      .setAuthor({ name: `${beautifyString(type)} Slot Information` })
+      .setColor(slot.embedColor as ColorResolvable)
+      .setDescription(
+        `Welcome to your new slot! Please follow these guidelines:\n\n` +
+        `• Follow all server rules and regulations\n` +
+        `• Always be ready to accept a Middle Man when required`
+      )
+      .addFields([
+        { name: 'Purchased At', value: `<t:${nowTimestamp}:F>`, inline: true },
+        { name: 'Expiry Date', value: template.duration === -1 ? 'Lifetime' : `<t:${expiryTimestamp}:F>`, inline: true },
+        { name: 'Duration', value: template.duration === -1 ? 'Never' : `${template.duration} day(s)`, inline: true },
+        { name: 'Available Pings', value: `\`@here\`: ${template.pings.here}\n\`@everyone\`: ${template.pings.everyone}`, inline: false },
+      ])
+      .setFooter({ text: `Slot ID: ${channel.id} • Developed by @dev_anik` })
+      .setTimestamp()
+      .setThumbnail(message.author.displayAvatarURL() || null);
+
+    await channel.send({
+      content: `Welcome <@${user.id}>! Your ${beautifyString(type)} slot has been created successfully. **Check your DMs for your restore code!**`,
+      embeds: [embed]
     });
 
     slotLib.updateSlot(user.id, { embeddata: embed.toJSON() });
 
-
-
-    
-    const sentMessage = await channel.send({
-        content: `**📌 IMPORTANT INFORMATION**\n> Please keep this message pinned for future reference.\n> Your restore code has been sent to you via DM.\n> Type \`!help\` to see available commands for your slot.`
-    });
-    await sentMessage.pin();
-
     await logPost(
-        `Slot created for <@${user.id}> in ${channelMention(channel.id)}\n> **Type:** ${beautifyString(type)}\n> **Expires:** <t:${expiryTimestamp}:F>\n> **Restore code:** \`${restoreCode}\``,
-        message.client,
-        "Action"
+      `Slot created for <@${user.id}> in ${channelMention(channel.id)}\n> **Type:** ${beautifyString(type)}\n> **Expires:** <t:${expiryTimestamp}:F>\n> **Restore code:** \`${restoreCode}\``,
+      message.client,
+      'Action'
     )
 
     await msg.edit({
-        content: `✅ Slot created successfully for \`${user.username}\`!\n> **Type:** ${beautifyString(type)}\n> **Channel:** ${channelMention(channel.id)}\n> **Expires:** <t:${expiryTimestamp}:R>\n> **Restore code:** Sent via DM`,
-        embeds: [],
+      content: `Slot created successfully for \`${user.username}\`!\n> **Type:** ${beautifyString(type)}\n> **Channel:** ${channelMention(channel.id)}\n> **Expires:** <t:${expiryTimestamp}:R>\n> **Restore code:** Sent via DM`,
+      embeds: [],
     });
   },
 };
