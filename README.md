@@ -279,6 +279,8 @@ Commands that can be used by slot owners within their own slots.
 |---------|-------------|-------|---------|
 | `myslot` | Shows information about your slot | `!myslot` | `p` |
 | `nuke` | Deletes and recreates your slot channel | `!nuke` | None |
+| `add-products` | Add products to your slot | `!add-products product1, product2, ...` | `addprod`, `ap` |
+| `remove-products` | Remove products from your slot | `!remove-products product1, product2, ...` | `removeprod`, `rp` |
 
 #### Command Details:
 
@@ -303,6 +305,26 @@ Commands that can be used by slot owners within their own slots.
   - Updates the slot database with the new channel ID
   - Has a 2-hour cooldown to prevent abuse
 
+**Add-Products Command**
+- **Usage**: `!add-products product1, product2, ...`
+- **Aliases**: `addprod`, `ap`
+- **Description**: Add one or more products to your slot's product list. Products should be comma-separated.
+- **Example**: `!add-products Nitro, Discord Classic, Spotify`
+- **What it does**:
+  - Adds the specified products to your slot
+  - Updates your slot's product list
+  - Confirms the addition and shows your current products
+
+**Remove-Products Command**
+- **Usage**: `!remove-products product1, product2, ...`
+- **Aliases**: `removeprod`, `rp`
+- **Description**: Remove one or more products from your slot's product list. Products should be comma-separated.
+- **Example**: `!remove-products Nitro, Spotify`
+- **What it does**:
+  - Removes the specified products from your slot
+  - Notifies you of any products not found
+  - Shows your updated product list
+
 ### Utility Commands
 
 General utility commands available to everyone.
@@ -310,6 +332,7 @@ General utility commands available to everyone.
 | Command | Description | Usage | Aliases |
 |---------|-------------|-------|---------|
 | `help` | Shows available commands | `!help [command]` | `commands`, `h` |
+| `search` | Search for products in active slots or list all slots | `!search [product name]` | `find`, `s` |
 
 #### Command Details:
 
@@ -321,6 +344,17 @@ General utility commands available to everyone.
 - **What it shows**:
   - Without arguments: Interactive dropdown menu of command categories
   - With command name: Detailed information about that specific command
+
+**Search Command**
+- **Usage**: `!search [product name]`
+- **Aliases**: `find`, `s`
+- **Description**: Search for products being sold in all active slots. If no product name is provided, lists all active slots sorted by priority.
+- **Example**: `!search Nitro`, `!search gift card`, `!search`
+- **What it does**:
+  - Searches all active slots for products matching your query (supports abbreviations and partial matches)
+  - Displays results with seller usernames and channel references
+  - Supports pagination for large result sets
+  - If no query is given, lists all active slots
 
 ## Slot Management System
 
