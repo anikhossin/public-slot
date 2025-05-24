@@ -20,5 +20,6 @@ export interface ISlot {
     createdAt: string;
     expiresAt: string;
     lastPing: string;
+    products: string[];
     embeddata?: Object;
 }

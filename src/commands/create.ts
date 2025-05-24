@@ -135,6 +135,7 @@ const CreateSlotCommand: PrefixCommand = {
       },
       createdAt: nowTimestamp.toString(),
       expiresAt: expiryTimestamp.toString(),
+      products: [],
       lastPing: nowTimestamp.toString(),
 
     });
