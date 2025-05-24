@@ -15,6 +15,7 @@
   "dependencies": {
     "dayjs": "^1.11.13",
     "discord.js": "^14.18.0",
+    "flexsearch": "^0.8.204",
     "typescript": "^5.8.2"
   }
 }

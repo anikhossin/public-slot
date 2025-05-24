@@ -14,6 +14,9 @@ importers:
       discord.js:
         specifier: ^14.18.0
         version: 14.18.0
+      flexsearch:
+        specifier: ^0.8.204
+        version: 0.8.204
       typescript:
         specifier: ^5.8.2
         version: 5.8.2
@@ -82,6 +85,9 @@ packages:
 
   fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
+
+  flexsearch@0.8.204:
+    resolution: {integrity: sha512-Vh+WUZfUHsVP6w4o5uAkYle8Gz/oEuztSWvpSY3h71AE8ox+goTQ2X5YG4x6VlKKfubkMwhewk8kBTOVKMObHA==}
 
   lodash.snakecase@4.1.1:
     resolution: {integrity: sha512-QZ1d4xoBHYUeuouhEq3lk3Uq7ldgyFXGBhg04+oRLnIz8o9T65Eh+8YdroUwn846zchkA9yDsDl5CVVaV2nqYw==}
@@ -213,6 +219,8 @@ snapshots:
       - utf-8-validate
 
   fast-deep-equal@3.1.3: {}
+
+  flexsearch@0.8.204: {}
 
   lodash.snakecase@4.1.1: {}
 
