@@ -13,20 +13,43 @@ interface SearchResult {
 
 function sortSlotsByPriority(slots: ISlot[]): ISlot[] {
     return slots.sort((a, b) => {
-        // Lifetime slots (-1) get highest priority
         if (a.duration === -1 && b.duration !== -1) return -1;
         if (a.duration !== -1 && b.duration === -1) return 1;
-
-        // If both are lifetime or both are not, compare durations
         if (a.duration !== b.duration) {
             return b.duration - a.duration;
         }
-
-        // Same duration, sort by creation date (older = higher position)
         const aCreatedAt = parseInt(a.createdAt);
         const bCreatedAt = parseInt(b.createdAt);
         return aCreatedAt - bCreatedAt;
     });
+}
+
+function expandQueryWithRegex(query: string): string[] {
+    const queries = [query];
+    const abbreviations: Record<string, string[]> = {
+        'nb': ['nitro boost', 'nitro boosts'],
+        'nc': ['nitro classic'],
+        'ny': ['nitro yearly'],
+        'dc': ['discord'],
+        'ps': ['playstation'],
+        'xbox': ['xbox'],
+        'steam': ['steam'],
+        'gift': ['gift card', 'giftcard'],
+        'gc': ['gift card', 'giftcard'],
+        'sub': ['subscription'],
+        'acc': ['account'],
+        'acct': ['account']
+    };
+    const lowerQuery = query.toLowerCase().trim();
+    if (abbreviations[lowerQuery]) {
+        queries.push(...abbreviations[lowerQuery]);
+    }
+    for (const [abbrev, expansions] of Object.entries(abbreviations)) {
+        if (lowerQuery.includes(abbrev)) {
+            queries.push(...expansions);
+        }
+    }
+    return [...new Set(queries)];
 }
 
 async function searchProducts(query: string): Promise<SearchResult[]> {
@@ -34,26 +57,20 @@ async function searchProducts(query: string): Promise<SearchResult[]> {
     const activeSlots = slots.filter(slot =>
         slot.status === "active" || slot.status === "about_to_expire"
     );
-
     if (!query || query.trim() === "") {
-        // If no query, return all active slots sorted by priority
         const sortedSlots = sortSlotsByPriority(activeSlots);
         return sortedSlots.map(slot => ({
             slot,
             matchedProducts: slot.products
         }));
     }
-
-    // Create FlexSearch index for products
+    const expandedQueries = expandQueryWithRegex(query);
     const index = new FlexSearch.Index({
         tokenize: "forward",
-        resolution: 9
+        resolution: 3
     });
-
     const productSlotMap = new Map<number, { slot: ISlot; product: string }>();
     let productId = 0;
-
-    // Index all products
     for (const slot of activeSlots) {
         for (const product of slot.products) {
             index.add(productId, product);
@@ -61,13 +78,23 @@ async function searchProducts(query: string): Promise<SearchResult[]> {
             productId++;
         }
     }
-
-    // Search for products
-    const searchResults = index.search(query.toLowerCase());
+    let allSearchResults = new Set<number>();
+    for (const searchQuery of expandedQueries) {
+        let searchResults = index.search(searchQuery.toLowerCase());
+        if (searchResults.length === 0) {
+            const manualResults: number[] = [];
+            for (const [id, { product }] of productSlotMap) {
+                if (product.toLowerCase().includes(searchQuery.toLowerCase())) {
+                    manualResults.push(id);
+                }
+            }
+            searchResults = manualResults;
+        }
+        searchResults.forEach(id => allSearchResults.add(id as number));
+    }
     const resultMap = new Map<string, SearchResult>();
-
-    for (const id of searchResults) {
-        const result = productSlotMap.get(id as number);
+    for (const id of allSearchResults) {
+        const result = productSlotMap.get(id);
         if (result) {
             const key = result.slot.userId;
             if (resultMap.has(key)) {
@@ -80,11 +107,8 @@ async function searchProducts(query: string): Promise<SearchResult[]> {
             }
         }
     }
-
-    // Sort results by slot priority
     const sortedResults = Array.from(resultMap.values());
     sortedResults.sort((a, b) => {
-        // Apply same sorting logic as channel position maintainer
         if (a.slot.duration === -1 && b.slot.duration !== -1) return -1;
         if (a.slot.duration !== -1 && b.slot.duration === -1) return 1;
         if (a.slot.duration !== b.slot.duration) {
@@ -94,7 +118,6 @@ async function searchProducts(query: string): Promise<SearchResult[]> {
         const bCreatedAt = parseInt(b.slot.createdAt);
         return aCreatedAt - bCreatedAt;
     });
-
     return sortedResults;
 }
 
@@ -108,10 +131,8 @@ const SearchCommand: PrefixCommand = {
     },
     execute: async (msg: Message, args: string[]) => {
         const query = args.join(" ").trim();
-
         try {
             const results = await searchProducts(query);
-
             if (results.length === 0) {
                 const embed = new EmbedBuilder()
                     .setTitle("🔍 Search Results")
@@ -121,10 +142,8 @@ const SearchCommand: PrefixCommand = {
                     )
                     .setColor(getColor())
                     .setTimestamp();
-
                 return await msg.reply({ embeds: [embed] });
             }
-
             const embed = new EmbedBuilder()
                 .setTitle("🔍 Search Results")
                 .setDescription(query
@@ -133,31 +152,24 @@ const SearchCommand: PrefixCommand = {
                 )
                 .setColor(getColor())
                 .setTimestamp();
-
-            // Add fields for each result (limit to 10 to avoid embed limits)
             const displayResults = results.slice(0, 10);
-
             for (let i = 0; i < displayResults.length; i++) {
                 const result = displayResults[i];
                 const { slot, matchedProducts } = result;
-
                 const statusEmoji = slot.status === "active" ? "🟢" : "🟡";
                 const durationType = slot.duration === -1 ? "Lifetime" : `${slot.duration}d`;
                 const expiration = slot.duration === -1
                     ? "Never"
                     : time(dayjs(Number(slot.expiresAt) * 1000).unix(), "R");
-
                 const products = query
                     ? matchedProducts.slice(0, 3).join(", ") + (matchedProducts.length > 3 ? "..." : "")
                     : slot.products.slice(0, 3).join(", ") + (slot.products.length > 3 ? "..." : "");
-
                 embed.addFields([{
                     name: `${i + 1}. ${statusEmoji} <#${slot.channelid}>`,
                     value: `**Duration:** ${durationType}\n**Expires:** ${expiration}\n**Products:** ${products || "None"}`,
                     inline: false
                 }]);
             }
-
             if (results.length > 10) {
                 embed.setFooter({
                     text: `Showing first 10 of ${results.length} results • Requested by ${msg.author.tag}`,
@@ -169,9 +181,7 @@ const SearchCommand: PrefixCommand = {
                     iconURL: msg.author.displayAvatarURL() || ""
                 });
             }
-
             await msg.reply({ embeds: [embed] });
-
         } catch (error) {
             console.error("Error in search command:", error);
             const embed = new EmbedBuilder()
@@ -179,7 +189,6 @@ const SearchCommand: PrefixCommand = {
                 .setDescription("An error occurred while searching. Please try again.")
                 .setColor("#ff0000")
                 .setTimestamp();
-
             await msg.reply({ embeds: [embed] });
         }
     }
